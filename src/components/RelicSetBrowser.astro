@@ -20,6 +20,17 @@ type RelicSetBrowserData = {
 
         tags: string[];
         tagGroups: string[];
+
+        usagePieces: number;
+
+        rankedOn: {
+            characterName: string;
+            characterRarity: string;
+            href: string;
+            isWip?: boolean;
+            rank?: number;
+            popoverHtml?: string;
+        }[];
     }[];
 
     tagOptionGroups: {
@@ -73,6 +84,11 @@ const sortOptions = [
         label: t(locale, 'ui', 'Release Date - Newest', undefined, false),
     },
 ];
+
+const noMentionsLabel = t(locale, 'ui', 'No relic set mentions', undefined, false);
+
+const getRankedOnLabel = (pieces: number) =>
+    t(locale, 'ui', `${pieces}-Piece ranked on`, undefined, false);
 
 const getTypeLabel = (type: 'cavern' | 'planar') =>
     type === 'cavern' ? cavernLabel : planarLabel;
@@ -233,6 +249,42 @@ const getTypeLabel = (type: 'cavern' | 'planar') =>
                             </section>
                         ))}
                     </div>
+
+                    <section
+                        class="artifact-set-usage"
+                        aria-label={`${relicSet.name} ${getRankedOnLabel(relicSet.usagePieces)}`}
+                    >
+                        <h3>{getRankedOnLabel(relicSet.usagePieces)}</h3>
+
+                        {relicSet.rankedOn.length > 0 ? (
+                            <div class="artifact-set-usage-list">
+                                {relicSet.rankedOn.map((usage) => (
+                                    <a
+                                        class={`artifact-set-usage-chip character-rarity-${usage.characterRarity}${
+                                            usage.isWip ? ' is-wip' : ''
+                                        }`}
+                                        href={usage.href}
+                                        data-usage-popover-html={
+                                            usage.popoverHtml || undefined
+                                        }
+                                    >
+                                        {(usage.rank || usage.isWip) && (
+                                            <strong class="usage-rank-number">
+                                                {usage.isWip ? 'WIP' : usage.rank}
+                                            </strong>
+                                        )}
+                                        <span class="artifact-set-usage-character">
+                                            {usage.characterName}
+                                        </span>
+                                    </a>
+                                ))}
+                            </div>
+                        ) : (
+                            <p class="artifact-set-usage-empty">
+                                {noMentionsLabel}
+                            </p>
+                        )}
+                    </section>
                 </article>
             ))
         }
@@ -245,4 +297,5 @@ const getTypeLabel = (type: 'cavern' | 'planar') =>
 
 <script>
     import '../scripts/card-filters';
+    import '../scripts/relic-usage-popover';
 </script>

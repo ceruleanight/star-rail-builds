@@ -414,3 +414,118 @@
         justify-self: start;
     }
 }
+
+/* Hover card for ranked-on character chips (see scripts/relic-usage-popover.ts). */
+.usage-popover-card {
+    --usage-popover-accent: var(--accent);
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 10000;
+    display: none;
+    width: min(320px, calc(100vw - 16px));
+    max-height: calc(100vh - 16px);
+    overflow-y: auto;
+    border: 1px solid color-mix(in srgb, var(--usage-popover-accent) 48%, rgba(255, 255, 255, 0.18));
+    border-radius: 8px;
+    margin: 0;
+    padding: 12px;
+    background:
+        linear-gradient(180deg,
+            color-mix(in srgb, var(--usage-popover-accent) 10%, transparent),
+            transparent 44%),
+        color-mix(in srgb, var(--bg) 86%, #05080c 14%);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.34);
+    color: var(--text);
+    font-size: 0.82rem;
+    line-height: 1.35;
+    pointer-events: none;
+}
+
+/* 4-star characters get a purple card, matching their chip. */
+.usage-popover-card.character-rarity-4 {
+    --usage-popover-accent: #b980ff;
+}
+
+.usage-popover-card:popover-open {
+    display: grid;
+    gap: 10px;
+}
+
+.usage-popover-card span {
+    display: block;
+}
+
+.usage-popover-header {
+    display: flex !important;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.usage-popover-name {
+    color: var(--usage-popover-accent);
+    font-size: 1rem;
+    font-weight: 850;
+}
+
+.usage-popover-build {
+    color: color-mix(in srgb, var(--text) 62%, transparent);
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-align: right;
+}
+
+.usage-popover-section {
+    display: grid !important;
+    gap: 5px;
+    border-top: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+    padding-top: 8px;
+}
+
+.usage-popover-title {
+    color: color-mix(in srgb, var(--text) 66%, transparent);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+}
+
+.usage-popover-row {
+    display: flex !important;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.usage-popover-slot {
+    color: color-mix(in srgb, var(--text) 70%, transparent);
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.usage-popover-value {
+    font-weight: 800;
+    text-align: right;
+}
+
+.usage-popover-subs {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.usage-popover-sub {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid color-mix(in srgb, var(--usage-popover-accent) 36%, transparent);
+    border-radius: 6px;
+    padding: 2px 6px;
+    background: color-mix(in srgb, var(--usage-popover-accent) 10%, transparent);
+    font-weight: 700;
+}
+
+.usage-popover-sub strong {
+    color: var(--usage-popover-accent);
+    font-weight: 900;
+}
