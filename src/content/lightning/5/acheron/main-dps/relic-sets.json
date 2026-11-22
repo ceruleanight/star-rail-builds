@@ -12,12 +12,17 @@
                             }
                         }
                     ]
-                },
+                }
+            ]
+        },
+        {
+            "groups": [
                 {
                     "items":[
                         {
                             "name": "duke",
                             "pieces": 4,
+                            "note_group": "fua",
                             "note": {
                                 "en": "Viable when used with E2 Mortenax Blade."
                             }
@@ -31,7 +36,15 @@
                             "pieces": 4
                         }
                     ]
-                }
+                },
+               {
+                    "items": [
+                        {
+                            "name": "genius",
+                            "pieces": 4
+                        }
+                    ]
+               } 
             ]
         },
         {
@@ -55,6 +68,22 @@
                         {
                             "name": "izumo",
                             "pieces": 2
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "groups": [
+                {
+                    "items": [
+                        {
+                            "name": "duran",
+                            "pieces": 2,
+                            "note_group": "e2-mblade-bis",
+                            "note": {
+                                "en": "Best in Slot when used with E2 Mortenax Blade."
+                            }
                         }
                     ]
                 }

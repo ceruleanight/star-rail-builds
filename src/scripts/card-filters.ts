@@ -195,6 +195,66 @@ if (kind) {
     const sortSelect = form?.elements.namedItem('sort');
     const sortStorageKey = sortStorageKeys[kind];
 
+    // Keep filter values separate for each catalog, shared across languages.
+    // Search text stays temporary; sorting retains its existing storage keys.
+    const filterStorageKey = `star-rail-builds:${kind}-filters`;
+    const filterControls = Array.from(
+        form?.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+            'input[name], select[name]',
+        ) ?? [],
+    ).filter((control) =>
+        !['search', 'sort'].includes(control.name) &&
+        (control instanceof HTMLSelectElement ||
+            ['radio', 'checkbox'].includes(control.type)),
+    );
+
+    try {
+        const saved: unknown = JSON.parse(
+            localStorage.getItem(filterStorageKey) ?? '{}',
+        );
+        if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+            for (const control of filterControls) {
+                const value = (saved as Record<string, unknown>)[control.name];
+                if (typeof value !== 'string') continue;
+
+                if (control instanceof HTMLSelectElement) {
+                    if ([...control.options].some((option) => option.value === value)) {
+                        control.value = value;
+                    }
+                } else if (control.type === 'checkbox') {
+                    if (value === '' || value === control.value) {
+                        control.checked = value === control.value;
+                    }
+                } else {
+                    const valid = filterControls.some((candidate) =>
+                        candidate.name === control.name && candidate.value === value,
+                    );
+                    if (valid) control.checked = control.value === value;
+                }
+            }
+        }
+    } catch {
+        // Invalid or unavailable storage must not prevent browsing.
+    }
+
+    form?.addEventListener('change', () => {
+        const filters: Record<string, string> = {};
+        for (const control of filterControls) {
+            if (control instanceof HTMLSelectElement) {
+                filters[control.name] = control.value;
+            } else if (control.type === 'checkbox') {
+                filters[control.name] = control.checked ? control.value : '';
+            } else if (control.checked) {
+                filters[control.name] = control.value;
+            }
+        }
+        try {
+            localStorage.setItem(filterStorageKey, JSON.stringify(filters));
+        } catch {
+            // Filtering still works when storage is blocked.
+        }
+    });
+
     const getElementYPosition = (element: HTMLElement) => {
         let currentElement: HTMLElement | null = element;
         let elementYPosition = 0;
@@ -305,6 +365,125 @@ if (kind) {
         if (empty) empty.hidden = visibleCount > 0;
         updateVisibleImageLoading();
     };
+
+    if (kind === 'character') {
+        const pinStorageKey = 'star-rail-builds:pinned-characters';
+        const pinToggle = document.querySelector<HTMLButtonElement>('[data-pin-toggle]');
+        const pinHelp = document.querySelector<HTMLElement>('[data-pin-help]');
+        const roster = document.querySelector<HTMLElement>('[data-roster-list]');
+        let pinning = false;
+        let pins = new Set<string>();
+
+        const readPins = () => {
+            try {
+                const saved: unknown = JSON.parse(localStorage.getItem(pinStorageKey) ?? '[]');
+                return new Set<string>(
+                    Array.isArray(saved)
+                        ? saved.filter((slug): slug is string => typeof slug === 'string')
+                        : [],
+                );
+            } catch {
+                return new Set<string>();
+            }
+        };
+
+        // Preserve normal link semantics outside the explicit editing mode.
+        const originalAttributes = new Map(cards.map((card) => [
+            card,
+            {
+                label: card.getAttribute('aria-label'),
+                role: card.getAttribute('role'),
+                disabled: card.getAttribute('aria-disabled'),
+                tabindex: card.getAttribute('tabindex'),
+            },
+        ]));
+
+        const updatePinCards = () => {
+            for (const card of cards) {
+                const isPinned = pins.has(card.dataset.characterSlug ?? '');
+                card.dataset.pinned = String(isPinned);
+                const original = originalAttributes.get(card)!;
+                if (pinning) {
+                    card.setAttribute('role', 'button');
+                    card.setAttribute('tabindex', '0');
+                    card.removeAttribute('aria-disabled');
+                    card.setAttribute('aria-pressed', String(isPinned));
+                    card.setAttribute(
+                        'aria-label',
+                        `${isPinned ? card.dataset.unpinLabel : card.dataset.pinLabel}: ${card.dataset.name}`,
+                    );
+                } else {
+                    card.removeAttribute('aria-pressed');
+                    for (const [attribute, value] of [
+                        ['aria-label', original.label],
+                        ['role', original.role],
+                        ['aria-disabled', original.disabled],
+                        ['tabindex', original.tabindex],
+                    ] as const) {
+                        if (value === null) card.removeAttribute(attribute);
+                        else card.setAttribute(attribute, value);
+                    }
+                }
+            }
+        };
+
+        pins = readPins();
+        updatePinCards();
+
+        pinToggle?.addEventListener('click', () => {
+            pinning = !pinning;
+            pinToggle.setAttribute('aria-pressed', String(pinning));
+            roster?.classList.toggle('is-pinning', pinning);
+            if (pinHelp) pinHelp.hidden = !pinning;
+            updatePinCards();
+        });
+
+        const toggleCardPin = (card: HTMLElement) => {
+            const slug = card.dataset.characterSlug;
+            if (!slug) return;
+            // Merge any changes made in another tab before saving.
+            try {
+                if (localStorage.getItem(pinStorageKey) !== null) pins = readPins();
+            } catch {
+                // In-memory pinning still works if storage is blocked.
+            }
+            if (pins.has(slug)) pins.delete(slug);
+            else pins.add(slug);
+            try {
+                localStorage.setItem(pinStorageKey, JSON.stringify([...pins]));
+            } catch {
+                // Pins remain usable for this visit.
+            }
+            updatePinCards();
+            applyFilters();
+            card.focus({ preventScroll: true });
+        };
+
+        roster?.addEventListener('click', (event) => {
+            if (!pinning || !(event.target instanceof Element)) return;
+            const card = event.target.closest<HTMLElement>('[data-character-card]');
+            if (!card) return;
+            event.preventDefault();
+            event.stopPropagation();
+            toggleCardPin(card);
+        }, true);
+
+        roster?.addEventListener('keydown', (event) => {
+            if (!pinning || !['Enter', ' '].includes(event.key) ||
+                !(event.target instanceof Element)) return;
+            const card = event.target.closest<HTMLElement>('[data-character-card]');
+            if (!card) return;
+            event.preventDefault();
+            if (!event.repeat) toggleCardPin(card);
+        });
+
+        window.addEventListener('storage', (event) => {
+            if (event.key !== pinStorageKey && event.key !== null) return;
+            pins = readPins();
+            updatePinCards();
+            applyFilters();
+        });
+    }
 
     form?.addEventListener('change', applyFilters);
     form?.addEventListener('input', applyFilters);

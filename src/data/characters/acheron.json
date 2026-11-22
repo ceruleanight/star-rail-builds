@@ -1,4 +1,5 @@
 {
+    "hidden_kit_sections": [],
     "id": "acheron",
     "name": "Acheron",
     "rarity": "5",
@@ -289,5 +290,10 @@
             "name": "Apocalypse, the Emancipator",
             "description": "Increases the All-Type RES PEN for the Ultimate DMG dealt by Acheron by 20%. The DMG dealt by Basic ATK and Skill will also be considered as Ultimate DMG and can Reduce enemy Toughness regardless of Weakness Types. When breaking Weaknesses, triggers the Lightning Weakness Break effect."
         }
-    ]
+    ],
+    "affinitive_eidolon": {
+        "name": "A Glance Through Rime to Bone",
+        "tag": "AoE",
+        "description": "After a teammate attacks an enemy target with \"Crimson Knot,\" Acheron launches Follow-Up ATK, dealing Lightning DMG equal to 300% of Acheron's ATK to all enemies. Then, deals 6 instances of DMG, with each hit dealing Lightning DMG equal to 80% of Acheron's ATK to one random enemy. Gains 1 point(s) of Slashed Dream, and inflicts 1 stack(s) of \"Crimson Knot\" on the enemy target with the most \"Crimson Knot.\" When this instance of Follow-Up ATK deals DMG, it is considered as dealing Ultimate DMG.\nThis effect can trigger up to 1 time(s) per turn. The trigger count resets at the start of Acheron's turn. The Trace \"The Abyss\" will also take effect on this instance of Follow-Up ATK."
+    }
 }

@@ -1,4 +1,5 @@
 {
+    "hidden_kit_sections": [],
     "id": "pearl",
     "name": "Pearl",
     "rarity": 5,
@@ -268,7 +269,7 @@
         {
             "level": 6,
             "name": "Compute Life From One Shell",
-            "description": "While \"Deep Learning,\" all ally targets' All-Type RES PEN increases by 200%. Pearl's Enhanced Basic ATK additionally deals 400% Ice Elation DMG, which is calculated based on the stats of \"Aesthetic Archetype.\""
+            "description": "While \"Deep Learning,\" all ally targets' All-Type RES PEN increases by 20%. Pearl's Enhanced Basic ATK additionally deals 240% Ice Elation DMG, which is calculated based on the stats of \"Aesthetic Archetype.\""
         }
     ],
     "level_80_stats": {
@@ -347,6 +348,12 @@
                     ]
                 }
             }
+        }
+    },
+    "global_passives": {
+        "innate-trace": {
+            "name": "Faces of Elation ★ Leaping Off the Page",
+            "description": "At Aeon ★ Aha E0:\nWhen the Path of Elation ascends, the upper limit for Pearl's \"Party Trick\" increases to 75. When the extra turn granted by the Ultimate ends, 10% of the \"Certified Banger\" and 10% of the Punchline gained at the start of the extra turn are retained.\n\nAt Aeon ★ Aha E2:\nWhen the Path of Elation ascends, the upper limit for Pearl's \"Party Trick\" increases to 75. When the extra turn granted by the Ultimate ends, 20% of the \"Certified Banger\" and 20% of the Punchline gained at the start of the extra turn are retained."
         }
     }
 }
