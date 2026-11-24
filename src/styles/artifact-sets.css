@@ -285,6 +285,58 @@
     outline: none;
 }
 
+.artifact-set-usage-item {
+    display: inline-flex;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.artifact-set-usage-item .artifact-set-usage-chip {
+    min-width: 0;
+}
+
+/* Touch-only preview button; hover-capable devices use the hover card. */
+.artifact-set-usage-preview {
+    display: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .artifact-set-usage-chip.has-preview {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .artifact-set-usage-preview {
+        --character-rarity: var(--artifact-rarity);
+        display: inline-flex;
+        flex: none;
+        width: 34px;
+        min-height: 28px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid color-mix(in srgb, var(--character-rarity) 52%, transparent);
+        border-left-color: color-mix(in srgb, var(--character-rarity) 28%, transparent);
+        border-radius: 0 7px 7px 0;
+        padding: 0;
+        background: color-mix(in srgb, var(--character-rarity) 16%, transparent);
+        color: color-mix(in srgb, #fff 84%, var(--character-rarity) 16%);
+        cursor: pointer;
+    }
+
+    .artifact-set-usage-preview.character-rarity-4 {
+        --character-rarity: #b980ff;
+    }
+
+    .artifact-set-usage-preview.character-rarity-5 {
+        --character-rarity: #f1b44a;
+    }
+
+    .artifact-set-usage-preview[aria-expanded="true"] {
+        border-color: color-mix(in srgb, var(--character-rarity) 78%, white 8%);
+        background: color-mix(in srgb, var(--character-rarity) 34%, transparent);
+    }
+}
+
 .artifact-set-usage-character {
     min-width: 0;
     overflow-wrap: anywhere;

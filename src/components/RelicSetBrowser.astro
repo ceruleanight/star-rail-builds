@@ -87,6 +87,8 @@ const sortOptions = [
 
 const noMentionsLabel = t(locale, 'ui', 'No relic set mentions', undefined, false);
 
+const previewLabel = t(locale, 'ui', 'Preview', undefined, false);
+
 const getRankedOnLabel = (pieces: number) =>
     t(locale, 'ui', `${pieces}-Piece ranked on`, undefined, false);
 
@@ -259,24 +261,41 @@ const getTypeLabel = (type: 'cavern' | 'planar') =>
                         {relicSet.rankedOn.length > 0 ? (
                             <div class="artifact-set-usage-list">
                                 {relicSet.rankedOn.map((usage) => (
-                                    <a
-                                        class={`artifact-set-usage-chip character-rarity-${usage.characterRarity}${
-                                            usage.isWip ? ' is-wip' : ''
-                                        }`}
-                                        href={usage.href}
-                                        data-usage-popover-html={
-                                            usage.popoverHtml || undefined
-                                        }
-                                    >
-                                        {(usage.rank || usage.isWip) && (
-                                            <strong class="usage-rank-number">
-                                                {usage.isWip ? 'WIP' : usage.rank}
-                                            </strong>
+                                    <span class="artifact-set-usage-item">
+                                        <a
+                                            class={`artifact-set-usage-chip character-rarity-${usage.characterRarity}${
+                                                usage.isWip ? ' is-wip' : ''
+                                            }${usage.popoverHtml ? ' has-preview' : ''}`}
+                                            href={usage.href}
+                                            data-usage-popover-html={
+                                                usage.popoverHtml || undefined
+                                            }
+                                        >
+                                            {(usage.rank || usage.isWip) && (
+                                                <strong class="usage-rank-number">
+                                                    {usage.isWip ? 'WIP' : usage.rank}
+                                                </strong>
+                                            )}
+                                            <span class="artifact-set-usage-character">
+                                                {usage.characterName}
+                                            </span>
+                                        </a>
+                                        {usage.popoverHtml && (
+                                            <button
+                                                type="button"
+                                                class={`artifact-set-usage-preview character-rarity-${usage.characterRarity}`}
+                                                data-usage-preview
+                                                aria-expanded="false"
+                                                aria-label={`${previewLabel}: ${usage.characterName}`}
+                                            >
+                                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                                                    <circle cx="8" cy="8" r="6.2" />
+                                                    <path d="M8 7.2v4" />
+                                                    <path d="M8 4.7v.1" />
+                                                </svg>
+                                            </button>
                                         )}
-                                        <span class="artifact-set-usage-character">
-                                            {usage.characterName}
-                                        </span>
-                                    </a>
+                                    </span>
                                 ))}
                             </div>
                         ) : (
