@@ -166,3 +166,12 @@ export function findCharacterPath(
 
     return null;
 }
+
+export function normalizeVersion(version: unknown) {
+    return typeof version === 'string'
+        ? version
+            .trim()
+            .replace(/\s*\/\s*/g, ' / ')
+            .replace(/\s+/g, ' ')
+        : '';
+}

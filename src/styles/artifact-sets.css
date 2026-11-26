@@ -43,9 +43,9 @@
 .artifact-set-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: 1fr;
+    grid-auto-rows: auto;
     gap: 12px;
-    align-items: stretch;
+    align-items: start;
 }
 
 .artifact-set-entry {
@@ -53,9 +53,8 @@
     position: relative;
     display: grid;
     min-width: 0;
-    height: 100%;
     gap: 12px;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto;
     border-radius: 8px;
     padding: 14px;
     background:
@@ -176,7 +175,7 @@
 
 .artifact-set-bonus-list {
     display: grid;
-    height: 250px;
+    max-height: 250px;
     min-height: 0;
     gap: 10px;
     overflow: auto;
@@ -226,7 +225,6 @@
     display: grid;
     min-width: 0;
     gap: 8px;
-    grid-template-rows: auto minmax(0, 78px);
     border: 1px solid rgba(255, 255, 255, 0.075);
     border-radius: 8px;
     padding: 9px;
@@ -244,7 +242,7 @@
 
 .artifact-set-usage-list {
     display: flex;
-    height: 78px;
+    max-height: 78px;
     min-height: 0;
     align-content: flex-start;
     flex-wrap: wrap;
@@ -343,7 +341,7 @@
 }
 
 .artifact-set-usage-empty {
-    height: 78px;
+    max-height: 78px;
     min-height: 0;
     margin: 0;
     overflow: auto;
@@ -449,13 +447,9 @@
 
 
 
-    .artifact-set-usage {
-        grid-template-rows: auto minmax(0, 86px);
-    }
-
     .artifact-set-usage-list,
     .artifact-set-usage-empty {
-        height: 86px;
+        max-height: 86px;
     }
 
     .artifact-set-bonus {
@@ -580,4 +574,91 @@
 .usage-popover-sub strong {
     color: var(--usage-popover-accent);
     font-weight: 900;
+}
+
+.relic-roster-bar .roster-sort {
+    margin: 0;
+}
+
+.roster-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.relic-owned {
+    min-width: 0;
+    display: grid;
+    align-content: start;
+    gap: 6px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.relic-owned h3,
+.relic-owned h4 {
+    margin: 0;
+    font-size: 0.88rem;
+}
+
+.relic-owned ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.relic-owned .relic-owned-names {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 6px;
+}
+
+.relic-owned-names li {
+    min-width: 0;
+}
+
+.relic-owned-names a {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.relic-owned-slot + .relic-owned-slot {
+    margin-top: 7px;
+}
+
+.relic-owned-stat {
+    display: grid;
+    grid-template-columns: 2ch minmax(0, 1fr);
+    gap: 6px;
+    font-size: 0.84rem;
+    overflow-wrap: anywhere;
+}
+
+.relic-owned-rank {
+    font-variant-numeric: tabular-nums;
+    color: var(--artifact-rarity);
+}
+
+.relic-owned-name {
+    font-weight: 800;
+}
+
+.relic-owned-who {
+    font-weight: 400;
+    color: color-mix(in srgb, var(--text) 75%, transparent);
+}
+
+.relic-owned .relic-owned-ignored {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: 0.84rem;
+    color: color-mix(in srgb, var(--text) 62%, transparent);
+}
+
+[data-hide-names] .relic-owned .relic-owned-names,
+[data-hide-names] .relic-owned-who,
+body[data-hide-ranked] .artifact-set-usage {
+    display: none;
 }

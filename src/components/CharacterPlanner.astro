@@ -1,0 +1,167 @@
+---
+import { compareCharacterCards } from '../scripts/character-sort.mjs';
+import { t, type getLocale } from '../utils/i18n';
+import type { getCharacterPlanData } from '../utils/character-plans';
+
+interface Props {
+    characters: ReturnType<typeof getCharacterPlanData>;
+    locale: ReturnType<typeof getLocale>;
+    relicsHref: string;
+}
+
+const { characters, locale, relicsHref } = Astro.props;
+const ui = (id: string) => t(locale, 'ui', id);
+const groups = Map.groupBy(characters, ({ element }) => element);
+const cards = characters.map((character) => ({
+    character,
+    dataset: {
+        name: character.name,
+        releaseDate: character.releaseDate,
+        versionReleased: character.versionReleased,
+    },
+})).sort((a, b) => compareCharacterCards(a, b, 'release'));
+---
+
+<section
+    data-character-planner
+    data-imported={ui('Roster imported')}
+    data-import-ignored={ui('Roster import ignored')}
+    data-import-invalid={ui('Roster import invalid')}
+    data-copied={ui('Roster copied')}
+    data-copy-failed={ui('Roster copy failed')}
+>
+    <div class="roster-panel">
+        <div class="roster-toolbar">
+            <p>{ui('Roster selected')} <strong data-roster-count aria-live="polite">0</strong></p>
+            <a href={relicsHref}>{ui('Plan open relics')}</a>
+        </div>
+        <p class="roster-hint">{ui('Planner hint')}</p>
+        <div class="roster-toolbar roster-search-row">
+            <label class="home-search">
+                {ui('Roster search')}
+                <input type="search" data-roster-search autocomplete="off" />
+            </label>
+            <button class="roster-button" type="button" data-roster-all>{ui('Roster select all')}</button>
+            <button class="roster-button" type="button" data-roster-clear>{ui('Roster clear')}</button>
+        </div>
+
+        <div class="roster-groups">
+            {[...groups.values()].map((group) => (
+                <section class="roster-group" data-roster-group>
+                    <h2>{group[0].elementLabel}</h2>
+                    <div class="roster-chips">
+                        {group.map(({ id, name, rarity }) => (
+                            <button
+                                type="button"
+                                class={`roster-button character-rarity-${rarity}`}
+                                data-roster-character
+                                data-id={id}
+                                aria-pressed="false"
+                            >{name}</button>
+                        ))}
+                    </div>
+                </section>
+            ))}
+        </div>
+
+        <details class="roster-transfer">
+            <summary>{ui('Roster transfer')}</summary>
+            <label>
+                {ui('Roster transfer data')}
+                <textarea data-roster-transfer rows="3" placeholder={ui('Roster import placeholder')}></textarea>
+            </label>
+            <div class="roster-toolbar">
+                <button class="roster-button" type="button" data-roster-copy>{ui('Roster copy')}</button>
+                <button class="roster-button" type="button" data-roster-download>{ui('Roster download')}</button>
+                <button class="roster-button" type="button" data-roster-import>{ui('Roster import')}</button>
+                <label class="roster-file">
+                    {ui('Roster import file')}
+                    <input type="file" accept=".json,.txt,application/json,text/plain" data-roster-file />
+                </label>
+            </div>
+            <p role="status" data-roster-status></p>
+        </details>
+    </div>
+
+    <div class="plan-toolbar roster-toolbar">
+        <h2>{ui('Plan heading')}</h2>
+        <label class="roster-sort">
+            {ui('Sort by')}
+            <select class="home-native-select" data-character-sort autocomplete="off">
+                <option value="release" selected>{ui('Release date')}</option>
+                <option value="name">{ui('Alphabetical')}</option>
+                <option value="path">{ui('Path')}</option>
+            </select>
+        </label>
+    </div>
+
+    <p class="roster-hint" data-plan-empty>{ui('Plan no characters')}</p>
+    <div class="plan-grid" data-plan-grid>
+        {cards.map(({ character }) => (
+            <article
+                class={`plan-card character-rarity-${character.rarity}`}
+                data-plan-card
+                data-id={character.id}
+                data-name={character.name}
+                data-path={character.path}
+                data-release-date={character.releaseDate}
+                data-version-released={character.versionReleased}
+                data-defaults={JSON.stringify(character.defaults)}
+                hidden
+            >
+                <header class="plan-card-heading">
+                    <div>
+                        <h3><a href={character.href}>{character.name}</a></h3>
+                        <p>{[character.pathLabel, character.buildLabel].filter(Boolean).join(' · ')}</p>
+                    </div>
+                    <button type="button" class="roster-button" data-plan-reset>{ui('Plan reset')}</button>
+                </header>
+                <section class="plan-options">
+                    <h4>{ui('Relic Sets')}</h4>
+                    {character.sets.length === 0 && <p>{ui('Plan no sets')}</p>}
+                    {character.sections.filter(({ sets }) => sets.length > 0).map(({ sets, label }) => (
+                        <div class="plan-option-row">
+                            <h5>{label}</h5>
+                            <div class="roster-chips">
+                                {sets.map((set) => (
+                                    <button type="button" class="roster-button" data-plan-set data-key={set.key} aria-pressed="false">
+                                        {set.image && <img src={set.image} width="22" height="22" alt="" loading="lazy" decoding="async" />}
+                                        {(set.rank || set.isWip) && <strong class="plan-rank">{set.isWip ? ui('Plan WIP') : set.rank}</strong>}
+                                        {set.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </section>
+                <section class="plan-options">
+                    <h4>{ui('Main Stats')}</h4>
+                    {character.slots.map((slot) => (
+                        <div class="plan-option-row">
+                            <h5>{slot.label}</h5>
+                            <div class="roster-chips">
+                                {slot.stats.map((stat) => (
+                                    <button
+                                        type="button"
+                                        class:list={['roster-button', { 'plan-chip-extra': stat.rank === 0 }]}
+                                        data-plan-stat
+                                        data-slot={slot.key}
+                                        data-stat={stat.id}
+                                        aria-pressed="false"
+                                    >
+                                        {stat.rank > 0 && <strong class="plan-rank">{stat.rank}</strong>}
+                                        {stat.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </section>
+            </article>
+        ))}
+    </div>
+</section>
+
+<script>
+    import '../scripts/character-planner';
+</script>

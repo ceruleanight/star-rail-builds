@@ -1,52 +1,16 @@
 ---
 import { Image } from 'astro:assets';
-import type { AssetImage } from '../utils/item-assets';
-import { t } from '../utils/i18n';
+import { t, type getLocale } from '../utils/i18n';
+import type { getRelicSetBrowserData } from '../utils/relic-browser';
 
-type RelicSetBrowserData = {
-    relicSets: {
-        id: string;
-        image: AssetImage | '';
-        name: string;
-        type: 'cavern' | 'planar';
-        rarity: number;
-        versionReleased: string;
+interface Props {
+    data: ReturnType<typeof getRelicSetBrowserData>;
+    locale: ReturnType<typeof getLocale>;
+    charactersHref: string;
+}
 
-        bonuses: {
-            id: string;
-            label: string;
-            html: string;
-        }[];
-
-        tags: string[];
-        tagGroups: string[];
-
-        usagePieces: number;
-
-        rankedOn: {
-            characterName: string;
-            characterRarity: string;
-            href: string;
-            isWip?: boolean;
-            rank?: number;
-            popoverHtml?: string;
-        }[];
-    }[];
-
-    tagOptionGroups: {
-        label: string;
-
-        options: {
-            id: string;
-            label: string;
-        }[];
-    }[];
-};
-
-const { data, locale } = Astro.props as {
-    data: RelicSetBrowserData;
-    locale: any;
-};
+const { data, locale, charactersHref } = Astro.props;
+const ui = (id: string) => t(locale, 'ui', id);
 
 const allLabel = t(locale, 'ui', 'All');
 
@@ -97,6 +61,50 @@ const getTypeLabel = (type: 'cavern' | 'planar') =>
 ---
 
 <section class="artifact-set-browser" data-relic-browser>
+    <div
+        class="roster-panel relic-roster-bar"
+        data-relic-roster
+        data-defaults={JSON.stringify(data.characterDefaults)}
+        data-no-characters={ui('Roster no characters')}
+        data-not-needed={ui('Roster not needed')}
+        data-label-two={ui('2-Pc')}
+        data-label-four={ui('4-Pc')}
+        data-all-substats={JSON.stringify(data.allSubstats)}
+        data-label-substats-needed={ui('Roster substats needed')}
+        data-label-substats-ignored={ui('Roster substats ignored')}
+    >
+        <div class="roster-toolbar">
+            <p>{ui('Roster selected')} <strong data-roster-count aria-live="polite">0</strong></p>
+            <a href={charactersHref}>{ui('Plan edit')}</a>
+        </div>
+        <div class="roster-toolbar">
+            <div class="roster-chips" role="group" aria-label={ui('Roster view')}>
+                {[['needed', 'Roster keep'], ['unneeded', 'Roster remove'], ['', 'All']].map(([value, label]) => (
+                    <button class="roster-button" type="button" data-relic-view={value} aria-pressed={value === '' ? 'true' : 'false'}>
+                        {ui(label)} <span data-view-count></span>
+                    </button>
+                ))}
+            </div>
+            <label class="roster-sort">
+                {ui('Roster stats shown')}
+                <select class="home-native-select" data-relic-stat-mode>
+                    <option value="all">{ui('Roster stats all')}</option>
+                    <option value="top">{ui('Roster stats top')}</option>
+                </select>
+            </label>
+            <label class="roster-checkbox">
+                <input type="checkbox" data-relic-hide-names /> {ui('Roster hide names')}
+            </label>
+            <label class="roster-checkbox">
+                <input type="checkbox" data-relic-hide-ranked /> {ui('Roster hide ranked')}
+            </label>
+        </div>
+        <select name="roster" form="relic-set-filters" data-relic-roster-filter hidden>
+            <option value=""></option>
+            <option value="needed"></option>
+            <option value="unneeded"></option>
+        </select>
+    </div>
     <form
         class="home-filters artifact-set-filters"
         id="relic-set-filters"
@@ -200,6 +208,8 @@ const getTypeLabel = (type: 'cavern' | 'planar') =>
                 <article
                     class={`artifact-set-entry rarity-${relicSet.rarity}`}
                     data-relic-card
+                    data-set-id={relicSet.id}
+                    data-usage-json={JSON.stringify(relicSet.ownedUsage)}
                     data-name={relicSet.name}
                     data-type={relicSet.type}
                     data-tags={relicSet.tags.join(' ')}
@@ -304,6 +314,11 @@ const getTypeLabel = (type: 'cavern' | 'planar') =>
                             </p>
                         )}
                     </section>
+
+                    <section class="relic-owned">
+                        <h3>{ui('Roster owned usage')}</h3>
+                        <div data-relic-owned></div>
+                    </section>
                 </article>
             ))
         }
@@ -317,4 +332,5 @@ const getTypeLabel = (type: 'cavern' | 'planar') =>
 <script>
     import '../scripts/card-filters';
     import '../scripts/relic-usage-popover';
+    import '../scripts/relic-roster';
 </script>

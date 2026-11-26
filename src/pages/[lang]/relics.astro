@@ -7,9 +7,10 @@ import '../../styles/base.css';
 import '../../styles/home.css';
 import '../../styles/theme.css';
 import '../../styles/artifact-sets.css';
+import '../../styles/roster.css';
 
 import { t } from '../../utils/i18n';
-import { sitePath } from '../../utils/paths';
+import { localizedPath, sitePath } from '../../utils/paths';
 import { getLanguageStaticPaths } from '../../utils/routes';
 import { getRelicSetBrowserData } from '../../utils/relic-browser';
 
@@ -45,7 +46,7 @@ const title = t(locale, 'ui', 'Relics', undefined, false);
         </script>
         <meta charset="utf-8" />
 
-        <link rel="icon" type="image/webp" href={sitePath('favicon.png')} />
+        <link rel="icon" type="image/webp" href={sitePath('favicon.ico')} />
 
         <meta name="viewport" content="width=device-width" />
 
@@ -72,7 +73,7 @@ const title = t(locale, 'ui', 'Relics', undefined, false);
         <main class="artifact-set-page">
             <h1>{title}</h1>
 
-            <RelicSetBrowser data={data} locale={locale} />
+            <RelicSetBrowser data={data} locale={locale} charactersHref={localizedPath(data.lang, 'characters')} />
         </main>
 
         <Footer lang={data.lang} />

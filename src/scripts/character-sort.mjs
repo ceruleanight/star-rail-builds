@@ -33,6 +33,9 @@ export function compareCharacterCards(left, right, sort) {
     const byName = compareText(value(left, 'name'), value(right, 'name'));
 
     if (sort === 'name') return byName;
+    if (sort === 'path') {
+        return compareText(value(left, 'path'), value(right, 'path')) || byName;
+    }
     if (sort === 'rarity') {
         return (
             Number(value(right, 'rarity')) - Number(value(left, 'rarity')) || byName
@@ -40,6 +43,7 @@ export function compareCharacterCards(left, right, sort) {
     }
     if (sort === 'release') {
         return (
+            compareText(value(right, 'releaseDate'), value(left, 'releaseDate')) ||
             compareVersionNewest(
                 value(left, 'versionReleased'),
                 value(right, 'versionReleased'),

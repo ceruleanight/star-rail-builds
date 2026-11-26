@@ -52,6 +52,11 @@ const primaryLinks = [
         label: t(locale, 'ui', 'Relics', undefined, false) || 'Relics',
         isCurrent: page === 'relics',
     },
+    {
+        href: localizedPath(currentLang, 'characters'),
+        label: t(locale, 'ui', 'My Characters'),
+        isCurrent: page === 'characters',
+    },
 ];
 const infoLinks = [
     {

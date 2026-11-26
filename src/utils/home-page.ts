@@ -5,19 +5,10 @@ import {
     getPublicCharacterSlug,
 } from './character-slugs';
 import { resolveCharacterAssetImage } from './character-assets';
-import { readJSONFile, toTitleCase } from './content';
+import { normalizeVersion, readJSONFile, toTitleCase } from './content';
 import { getCharacterBuilds, getContentCharacters } from './content-tree';
 import { getLocale } from './i18n';
 import { TranslationHelper } from './translator';
-
-function normalizeVersion(version: unknown) {
-    return typeof version === 'string'
-        ? version
-            .trim()
-            .replace(/\s*\/\s*/g, ' / ')
-            .replace(/\s+/g, ' ')
-        : '';
-}
 
 function getRecentChangelogVersions(contentPath: string) {
     const changelogPath = path.join(contentPath, 'site', 'changelog.json');

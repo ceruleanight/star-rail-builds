@@ -4,6 +4,10 @@
             "version": "4.7",
             "entries": [
                 {
+                    "date": "November 25, 2026",
+                    "changes": "My Characters lets you save a roster and customize its relic sets and main stats. The Relic Sets page shows what to keep for your roster and which stats to look for."
+                },
+                {
                     "date" : "November 18, 2026",
                     "changes": "Added the pin feature and enabled localStorage support. Users can now pin selected units to the top of the character list, which is saved locally.",
                     "appliedBy": "Xaale"

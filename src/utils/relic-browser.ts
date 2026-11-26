@@ -1,5 +1,7 @@
 import path from 'path';
-import translationAliases from '../data/translation-aliases.json';
+import { getCharacterPlanData } from './character-plans';
+import { getBuildMainStatSlots, getSubstatOptions, statName, type RankedStat } from './build-stats';
+import { collectSetItems, normalizeSetId } from './relic-set-items';
 import {
     getBestBuildUsage,
     getWipNoteItems,
@@ -9,9 +11,18 @@ import { loadJSON, readJSONFile, toTitleCase } from './content';
 import { getLocale, t } from './i18n';
 import { resolveRelicAssetImage } from './item-assets';
 
-const bonusKeys = ['2p', '4p'] as const;
+export type OwnedSetUsage = {
+    characterId: string;
+    characterName: string;
+    characterRarity: string;
+    href: string;
+    isWip: boolean;
+    pieces: number;
+    substats: RankedStat[];
+    slots: { key: string; label: string; stats: RankedStat[] }[];
+};
 
-const aliases = translationAliases as { set?: Record<string, string> };
+const bonusKeys = ['2p', '4p'] as const;
 
 /**
  * Pieces that define a set's "ranked on" list: Cavern Relics are ranked as
@@ -171,53 +182,6 @@ function getRelicTagGroups(tags: string[]) {
 }
 
 /**
- * Returns every set item attached to one recommendation group, including
- * nested `choices` pools.
- */
-function getGroupItems(group: any): any[] {
-    const items = Array.isArray(group?.items) ? group.items : [];
-    const choiceItems = Array.isArray(group?.choices)
-        ? group.choices.flatMap((choice: any) =>
-            Array.isArray(choice?.items) ? choice.items : [],
-        )
-        : [];
-
-    return [...items, ...choiceItems];
-}
-
-function normalizeSetId(id: unknown) {
-    return typeof id === 'string' && id.trim()
-        ? (aliases.set?.[id] ?? id)
-        : null;
-}
-
-/**
- * Collects set items with an exact piece count from ranked and conditional
- * sections of one relic-sets.json file. Ranked rows carry their position.
- */
-function collectSetItems(
-    data: any,
-    pieces: number,
-    rankedKey: 'relic_sets' | 'planar_ornaments',
-) {
-    const ranked = (data?.[rankedKey] ?? []).flatMap(
-        (entry: any, index: number) =>
-            (entry.groups ?? []).flatMap((group: any) =>
-                getGroupItems(group).map((item) => ({ item, rank: index + 1 })),
-            ),
-    );
-    const conditional = (data?.conditional ?? []).flatMap((entry: any) =>
-        (entry.groups ?? [entry]).flatMap((group: any) =>
-            getGroupItems(group).map((item) => ({ item, rank: undefined })),
-        ),
-    );
-
-    return [...ranked, ...conditional]
-        .filter(({ item }) => Number(item?.pieces) === pieces)
-        .map(({ item, rank }) => ({ id: normalizeSetId(item?.name), rank }));
-}
-
-/**
  * Builds the "ranked on" indexes for relic sets.
  *
  * Only builds marked `best: true` are counted. Cavern Relics use 4-piece
@@ -226,7 +190,7 @@ function collectSetItems(
  */
 function getRelicSetUsage(locale: any, lang: string) {
     const wipItems = (buildNotes: any) =>
-        getWipNoteItems(buildNotes, 'relic', 'set', (id) => aliases.set?.[id] ?? id);
+        getWipNoteItems(buildNotes, 'relic', 'set', normalizeSetId);
 
     return {
         cavern: getBestBuildUsage(locale, lang, (buildPath, buildNotes) => [
@@ -257,22 +221,6 @@ function escapeHtml(value: unknown) {
         .replace(/'/g, '&#39;');
 }
 
-const mainStatSlots = [
-    { key: 'body', label: 'Body' },
-    { key: 'feet', label: 'Feet' },
-    { key: 'planar_sphere', label: 'Planar Sphere' },
-    { key: 'link_rope', label: 'Link Rope' },
-] as const;
-
-/**
- * Reads a stat entry (a plain ID or `{ name }`) and returns its display name.
- */
-function statName(locale: any, item: any) {
-    const id = typeof item === 'string' ? item : item?.name;
-
-    return typeof id === 'string' ? t(locale, 'stat', id, undefined, false) : '';
-}
-
 /**
  * Builds the hover card shown for one character chip: the main stats for the
  * four relic slots that vary (Body, Feet, Planar Sphere, Link Rope) and the
@@ -290,20 +238,9 @@ function renderUsagePopoverHtml(locale: any, lang: string, usage: BuildUsage) {
         buildNotes?.name?.en ??
         toTitleCase(usage.buildName);
 
-    const slotRows = mainStatSlots
-        .map(({ key, label }) => {
-            const names = (mainStats?.[key] ?? [])
-                .map((item: any) => statName(locale, item))
-                .filter(Boolean);
-
-            return names.length
-                ? `<div class="usage-popover-row"><span class="usage-popover-slot">${escapeHtml(
-                    t(locale, 'ui', label, undefined, false),
-                )}</span><span class="usage-popover-value">${escapeHtml(
-                    names.join(' / '),
-                )}</span></div>`
-                : '';
-        })
+    const slotRows = getBuildMainStatSlots(locale, usage.buildPath)
+        .filter((slot) => slot.value)
+        .map((slot) => `<div class="usage-popover-row"><span class="usage-popover-slot">${escapeHtml(slot.label)}</span><span class="usage-popover-value">${escapeHtml(slot.value)}</span></div>`)
         .join('');
 
     const substatChips = (substats ?? [])
@@ -421,11 +358,30 @@ export function getRelicSetBrowserData(
         planar: 1,
     } as const;
 
+    const characters = getCharacterPlanData(lang);
+    const characterDefaults = Object.fromEntries(characters.map(({ id, defaults }) => [id, defaults]));
+    const ownedUsage = new Map<string, OwnedSetUsage[]>();
+    for (const character of characters) {
+        for (const section of character.sections) {
+            for (const set of section.sets) {
+                const usage = ownedUsage.get(set.setId) ?? [];
+                usage.push({
+                    characterId: character.id, characterName: character.name, characterRarity: character.rarity,
+                    href: set.href, isWip: set.isWip, pieces: set.pieces,
+                    substats: character.substats,
+                    slots: character.slots.filter((slot) => slot.family === section.family)
+                        .map(({ key, label, stats }) => ({ key, label, stats })),
+                });
+                ownedUsage.set(set.setId, usage);
+            }
+        }
+    }
+
     const relicSets = getRelicSetEntries(
         locale,
         lang,
         getRelicSetUsage(locale, lang),
-    ).sort((a, b) => {
+    ).map((set) => ({ ...set, ownedUsage: ownedUsage.get(set.id) ?? [] })).sort((a, b) => {
         const byType =
             relicTypeOrder[a.type] -
             relicTypeOrder[b.type];
@@ -475,6 +431,8 @@ export function getRelicSetBrowserData(
 
     return {
         relicSets,
+        characterDefaults,
+        allSubstats: getSubstatOptions(locale),
         lang,
         locale,
         tagOptionGroups:
