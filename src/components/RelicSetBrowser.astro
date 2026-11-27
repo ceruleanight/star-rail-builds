@@ -49,6 +49,21 @@ const sortOptions = [
     },
 ];
 
+const relicSetFilterSortOptions = [
+    {
+        value: 'release',
+        label: t(locale, 'ui', 'Release Date - Newest', undefined, false),
+    },
+    {
+        value: 'name',
+        label: t(locale, 'ui', 'Relic Sets - A-Z', undefined, false),
+    },
+    {
+        value: 'type',
+        label: typeLabel,
+    },
+];
+
 const noMentionsLabel = t(locale, 'ui', 'No relic set mentions', undefined, false);
 
 const previewLabel = t(locale, 'ui', 'Preview', undefined, false);
@@ -121,6 +136,18 @@ const getTypeLabel = (type: 'cavern' | 'planar') =>
             />
         </label>
 
+        <label class="home-search">
+            {ui('Roster search')}
+
+            <input
+                type="search"
+                name="character"
+                data-relic-character-search
+                placeholder={ui('Roster search')}
+                autocomplete="off"
+            />
+        </label>
+
         <div class="home-select-filter">
             {typeLabel}
 
@@ -166,6 +193,59 @@ const getTypeLabel = (type: 'cavern' | 'planar') =>
                 }
             </select>
         </div>
+
+        <details class="artifact-set-set-filter" data-relic-set-filter>
+            <summary>{relicSetsLabel}</summary>
+            <div class="artifact-set-set-filter-actions">
+                <button type="button" class="roster-button" data-relic-sets-select-all>
+                    {allLabel}
+                </button>
+                <button type="button" class="roster-button" data-relic-sets-clear>
+                    {ui('Roster clear')}
+                </button>
+                <label class="roster-sort artifact-set-filter-sort">
+                    {sortByLabel}
+                    <select class="home-native-select" name="setSort" data-relic-set-sort>
+                        {relicSetFilterSortOptions.map((option) => (
+                            <option value={option.value} selected={option.value === 'release'}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+            </div>
+            <div
+                class="artifact-set-set-options"
+                data-relic-set-options
+                role="group"
+                aria-label={relicSetsLabel}
+            >
+                {data.relicSets.map(({ id, name, image, type, versionReleased }) => (
+                    <button
+                        type="button"
+                        class="artifact-set-set-option"
+                        data-relic-set-filter-item
+                        data-set-id={id}
+                        data-set-name={name}
+                        data-set-type={type}
+                        data-version-released={versionReleased}
+                        aria-pressed="true"
+                    >
+                        {image && (
+                            <Image
+                                src={image}
+                                alt=""
+                                width={56}
+                                height={56}
+                                loading="lazy"
+                                decoding="async"
+                            />
+                        )}
+                        <span>{name}</span>
+                    </button>
+                ))}
+            </div>
+        </details>
     </form>
 
     <div class="artifact-set-browser-header">

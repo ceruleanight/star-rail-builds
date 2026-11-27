@@ -110,7 +110,18 @@ function initRelicRoster(root: HTMLElement) {
     const mode = root.querySelector<HTMLSelectElement>('[data-relic-stat-mode]');
     const hideNames = root.querySelector<HTMLInputElement>('[data-relic-hide-names]');
     const hideRanked = root.querySelector<HTMLInputElement>('[data-relic-hide-ranked]');
-    if (!form || !filter || !count || !mode || !hideNames || !hideRanked) return;
+    const characterSearch = form?.querySelector<HTMLInputElement>(
+        '[data-relic-character-search]',
+    );
+    if (
+        !form ||
+        !filter ||
+        !count ||
+        !mode ||
+        !hideNames ||
+        !hideRanked ||
+        !characterSearch
+    ) return;
 
     const buttons = [...root.querySelectorAll<HTMLButtonElement>('[data-relic-view]')];
     const defaults = readPlans(parseJson(root.dataset.defaults ?? null));
@@ -134,8 +145,27 @@ function initRelicRoster(root: HTMLElement) {
         root.closest('[data-relic-browser]')?.toggleAttribute('data-hide-names', hideNames.checked);
         count.textContent = String(owned.size);
 
+        const characterQuery = characterSearch.value.trim().toLowerCase();
         let needed = 0;
         for (const { card, panel, usage } of cards) {
+            card.dataset.characterMatches = String(
+                !characterQuery ||
+                    usage.some(
+                        ({ characterId, characterName, pieces }) => {
+                            if (
+                                !characterName
+                                    .toLowerCase()
+                                    .includes(characterQuery)
+                            ) return false;
+                            if (!owned.has(characterId)) return true;
+                            const plan =
+                                plans[characterId] ?? defaults[characterId];
+                            return plan.sets.includes(
+                                card.dataset.setId + ':' + pieces,
+                            );
+                        },
+                    ),
+            );
             const selected = usage.filter(({ characterId, pieces }) =>
                 owned.has(characterId) &&
                 (plans[characterId] ?? defaults[characterId]).sets.includes(card.dataset.setId + ':' + pieces),
@@ -198,6 +228,7 @@ function initRelicRoster(root: HTMLElement) {
             render();
         });
     }
+    characterSearch.addEventListener('input', render);
     window.addEventListener('storage', (event) => {
         if (isRosterEvent(event) || Object.values(rosterKeys).some((key) => key === event.key)) {
             render();

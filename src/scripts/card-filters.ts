@@ -193,6 +193,11 @@ if (kind) {
     const count = document.querySelector<HTMLElement>(selector.count);
     const empty = document.querySelector<HTMLElement>(selector.empty);
     const sortSelect = form?.elements.namedItem('sort');
+    const setSortSelect = form?.querySelector<HTMLSelectElement>('[data-relic-set-sort]');
+    const setOptionsContainer = form?.querySelector<HTMLElement>('[data-relic-set-options]');
+    const setOptions = Array.from(
+        form?.querySelectorAll<HTMLButtonElement>('[data-relic-set-filter-item]') ?? [],
+    );
     const sortStorageKey = sortStorageKeys[kind];
 
     // Keep filter values separate for each catalog, shared across languages.
@@ -207,6 +212,35 @@ if (kind) {
         (control instanceof HTMLSelectElement ||
             ['radio', 'checkbox'].includes(control.type)),
     );
+
+    const sortRelicSetOptions = () => {
+        if (!setOptionsContainer) return;
+        const sort = setSortSelect?.value ?? 'release';
+        const typeOrder: Record<string, number> = { cavern: 0, planar: 1 };
+        const ordered = [...setOptions].sort((left, right) => {
+            const byName = (left.dataset.setName ?? '').localeCompare(
+                right.dataset.setName ?? '',
+            );
+            if (sort === 'name') return byName;
+            if (sort === 'type') {
+                return (
+                    (typeOrder[left.dataset.setType ?? ''] ?? 99) -
+                        (typeOrder[right.dataset.setType ?? ''] ?? 99) ||
+                    byName
+                );
+            }
+            return (
+                compareVersionNewest(
+                    left.dataset.versionReleased ?? '',
+                    right.dataset.versionReleased ?? '',
+                ) || byName
+            );
+        });
+        const current = Array.from(setOptionsContainer.children);
+        if (ordered.some((option, index) => current[index] !== option)) {
+            setOptionsContainer.append(...ordered);
+        }
+    };
 
     try {
         const saved: unknown = JSON.parse(
@@ -253,6 +287,31 @@ if (kind) {
         } catch {
             // Filtering still works when storage is blocked.
         }
+    });
+
+    form?.addEventListener('click', (event) => {
+        const button = event.target instanceof Element
+            ? event.target.closest<HTMLButtonElement>(
+                '[data-relic-set-filter-item], [data-relic-sets-select-all], [data-relic-sets-clear]',
+            )
+            : null;
+        if (!button || !form) return;
+
+        event.preventDefault();
+        if (button.hasAttribute('data-relic-set-filter-item')) {
+            button.setAttribute(
+                'aria-pressed',
+                String(button.getAttribute('aria-pressed') !== 'true'),
+            );
+        } else {
+            const selected = button.hasAttribute('data-relic-sets-select-all');
+            form.querySelectorAll<HTMLButtonElement>(
+                '[data-relic-set-filter-item]',
+            ).forEach((item) => {
+                item.setAttribute('aria-pressed', String(selected));
+            });
+        }
+        form.dispatchEvent(new Event('input', { bubbles: true }));
     });
 
     const getElementYPosition = (element: HTMLElement) => {
@@ -317,7 +376,19 @@ if (kind) {
     const applyFilters = () => {
         if (!form) return;
 
-        const values = Object.fromEntries(new FormData(form));
+        const formData = new FormData(form);
+        const values = Object.fromEntries(formData);
+        const selectedRelicSets = new Set(
+            Array.from(
+                form.querySelectorAll<HTMLButtonElement>(
+                    '[data-relic-set-filter-item][aria-pressed="true"]',
+                ),
+                (button) => button.dataset.setId ?? '',
+            ),
+        );
+        const hasRelicSetFilter = Boolean(
+            form.querySelector('[data-relic-set-filter]'),
+        );
         const search = String(values.search ?? '')
             .trim()
             .toLowerCase();
@@ -325,9 +396,9 @@ if (kind) {
 
         if (sortSelect instanceof HTMLSelectElement) {
             const sort = String(values.sort ?? sortSelect.value);
-
-            cards[0]?.parentElement?.append(
-                ...[...cards].sort((left, right) =>
+            const cardParent = cards[0]?.parentElement;
+            if (cardParent) {
+                const ordered = [...cards].sort((left, right) =>
                     kind === 'character'
                         ? compareCharacterCards(left, right, sort)
                         : compareCatalogCards(
@@ -336,14 +407,30 @@ if (kind) {
                             sort,
                             kind,
                         ),
-                ),
-            );
+                );
+                const current = Array.from(
+                    cardParent.querySelectorAll<HTMLElement>(selector.card),
+                );
+                if (ordered.some((card, index) => current[index] !== card)) {
+                    cardParent.append(...ordered);
+                }
+            }
         }
+
+        sortRelicSetOptions();
 
         cards.forEach((card) => {
             const matches = Object.entries(values).every(([name, value]) => {
                 const selected = String(value);
-                if (!selected || name === 'search' || name === 'sort') return true;
+                if (
+                    !selected ||
+                    name === 'search' ||
+                    name === 'sort' ||
+                    name === 'setSort'
+                ) return true;
+                if (name === 'character') {
+                    return card.dataset.characterMatches === 'true';
+                }
 
                 const key = name === 'updated' ? 'recentUpdated' : name;
                 const cardValue = card.dataset[key] ?? '';
@@ -353,6 +440,7 @@ if (kind) {
             });
             const visible =
                 matches &&
+                (!hasRelicSetFilter || selectedRelicSets.has(card.dataset.setId ?? '')) &&
                 (!search || card.dataset.name?.toLowerCase().includes(search));
 
             card.hidden = !visible;

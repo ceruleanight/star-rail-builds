@@ -15,7 +15,109 @@
 }
 
 .artifact-set-filters {
-    grid-template-columns: minmax(260px, 1fr) repeat(2, minmax(126px, 0.42fr));
+    grid-template-columns:
+        minmax(220px, 1fr)
+        minmax(220px, 0.9fr)
+        repeat(2, minmax(126px, 0.42fr));
+}
+
+.artifact-set-set-filter {
+    grid-column: 1 / -1;
+    min-width: 0;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: rgba(8, 11, 16, 0.52);
+}
+
+.artifact-set-set-filter summary {
+    color: color-mix(in srgb, var(--text) 80%, transparent);
+    font-size: 0.78rem;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.artifact-set-set-filter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.artifact-set-filters .artifact-set-set-filter .artifact-set-filter-sort {
+    flex: 0 1 190px;
+    gap: 2px;
+    margin: 0 0 0 auto;
+    padding: 6px 9px;
+    font-size: 0.62rem;
+}
+
+.artifact-set-filters .artifact-set-set-filter .artifact-set-filter-sort select {
+    min-height: 24px;
+    font-size: 0.82rem;
+}
+
+.artifact-set-set-options {
+    display: grid;
+    max-height: 240px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 112px), 1fr));
+    gap: 8px;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+.artifact-set-filters .artifact-set-set-filter .artifact-set-set-option {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    min-height: 108px;
+    grid-template-rows: 56px minmax(0, 1fr);
+    justify-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 8px 6px;
+    background: rgba(0, 0, 0, 0.16);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1.2;
+    text-align: center;
+    cursor: pointer;
+    transition:
+        border-color 0.16s ease,
+        background 0.16s ease,
+        opacity 0.16s ease;
+}
+
+.artifact-set-filters .artifact-set-set-filter .artifact-set-set-option[aria-pressed='true'] {
+    border-color: color-mix(in srgb, var(--accent) 58%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, rgba(0, 0, 0, 0.18));
+}
+
+.artifact-set-filters .artifact-set-set-filter .artifact-set-set-option[aria-pressed='false'] {
+    opacity: 0.58;
+}
+
+.artifact-set-set-option span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.artifact-set-set-option img {
+    display: block;
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+}
+
+.artifact-set-set-option:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 .artifact-set-browser-header {
@@ -41,11 +143,8 @@
 }
 
 .artifact-set-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: auto;
-    gap: 12px;
-    align-items: start;
+    columns: 600px;
+    column-gap: 12px;
 }
 
 .artifact-set-entry {
@@ -53,8 +152,11 @@
     position: relative;
     display: grid;
     min-width: 0;
+    width: 100%;
     gap: 12px;
     grid-template-rows: auto;
+    break-inside: avoid;
+    margin-bottom: 12px;
     border-radius: 8px;
     padding: 14px;
     background:
@@ -372,9 +474,7 @@
      * let every card grow naturally with its content.
      */
     .artifact-set-grid {
-        grid-template-columns: 1fr;
-        grid-auto-rows: auto;
-        align-items: start;
+        columns: 1;
     }
 
     .artifact-set-entry {
@@ -400,11 +500,13 @@
     }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 880px) {
     .artifact-set-filters {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+}
 
+@media (max-width: 760px) {
     .artifact-set-filters .home-search {
         grid-column: 1 / -1;
     }
