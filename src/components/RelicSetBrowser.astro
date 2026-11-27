@@ -18,9 +18,9 @@ const resultsLabel = t(locale, 'ui', 'Results');
 
 const noResultsLabel = t(locale, 'ui', 'No relic sets found', undefined, false);
 
-const searchByNameLabel = t(locale, 'ui', 'Search by name');
+const searchByNameLabel = t(locale, 'ui', 'Enter relic name');
 
-const searchLabel = t(locale, 'ui', 'Search');
+const searchLabel = t(locale, 'ui', 'Relic Search');
 
 const typeLabel = t(locale, 'ui', 'Relic Type', undefined, false);
 
@@ -90,29 +90,30 @@ const getTypeLabel = (type: 'cavern' | 'planar') =>
     >
         <div class="roster-toolbar">
             <p>{ui('Roster selected')} <strong data-roster-count aria-live="polite">0</strong></p>
-            <a href={charactersHref}>{ui('Plan edit')}</a>
+            <div class="relic-toolbar-meta">
+                <label class="roster-sort">
+                    {ui('Roster stats shown')}
+                    <select class="home-native-select" data-relic-stat-mode>
+                        <option value="all">{ui('Roster stats all')}</option>
+                        <option value="top">{ui('Roster stats top')}</option>
+                    </select>
+                </label>
+                <label class="roster-checkbox">
+                    <input type="checkbox" data-relic-hide-names /> {ui('Roster hide names')}
+                </label>
+                <label class="roster-checkbox">
+                    <input type="checkbox" data-relic-hide-ranked /> {ui('Roster hide ranked')}
+                </label>
+            </div>
         </div>
-        <div class="roster-toolbar">
+        <div class="roster-toolbar relic-roster-view-toolbar">
             <div class="roster-chips" role="group" aria-label={ui('Roster view')}>
-                {[['needed', 'Roster keep'], ['unneeded', 'Roster remove'], ['', 'All']].map(([value, label]) => (
+                {[['', 'All'], ['needed', 'Roster keep'], ['unneeded', 'Roster remove']].map(([value, label]) => (
                     <button class="roster-button" type="button" data-relic-view={value} aria-pressed={value === '' ? 'true' : 'false'}>
                         {ui(label)} <span data-view-count></span>
                     </button>
                 ))}
             </div>
-            <label class="roster-sort">
-                {ui('Roster stats shown')}
-                <select class="home-native-select" data-relic-stat-mode>
-                    <option value="all">{ui('Roster stats all')}</option>
-                    <option value="top">{ui('Roster stats top')}</option>
-                </select>
-            </label>
-            <label class="roster-checkbox">
-                <input type="checkbox" data-relic-hide-names /> {ui('Roster hide names')}
-            </label>
-            <label class="roster-checkbox">
-                <input type="checkbox" data-relic-hide-ranked /> {ui('Roster hide ranked')}
-            </label>
         </div>
         <select name="roster" form="relic-set-filters" data-relic-roster-filter hidden>
             <option value=""></option>
@@ -137,36 +138,30 @@ const getTypeLabel = (type: 'cavern' | 'planar') =>
         </label>
 
         <label class="home-search">
-            {ui('Roster search')}
+            {t(locale, 'ui', 'Character Search')}
 
             <input
                 type="search"
                 name="character"
                 data-relic-character-search
-                placeholder={ui('Roster search')}
+                placeholder={t(locale, 'ui', 'Enter character name')}
                 autocomplete="off"
             />
         </label>
 
         <div class="home-select-filter">
-            {typeLabel}
+            {t(locale, 'ui', 'Rarity')}
 
             <select
                 class="home-native-select"
-                name="type"
-                aria-label={typeLabel}
+                name="rarity"
+                aria-label={t(locale, 'ui', 'Rarity')}
             >
                 <option value="">
                     {allLabel}
                 </option>
-
-                <option value="cavern">
-                    {cavernLabel}
-                </option>
-
-                <option value="planar">
-                    {planarLabel}
-                </option>
+                <option value="5">5</option>
+                <option value="4">4</option>
             </select>
         </div>
 
@@ -292,6 +287,7 @@ const getTypeLabel = (type: 'cavern' | 'planar') =>
                     data-usage-json={JSON.stringify(relicSet.ownedUsage)}
                     data-name={relicSet.name}
                     data-type={relicSet.type}
+                    data-rarity={relicSet.rarity}
                     data-tags={relicSet.tags.join(' ')}
                     data-tag-groups={relicSet.tagGroups.join(' ')}
                     data-version-released={relicSet.versionReleased}

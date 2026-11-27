@@ -207,7 +207,7 @@ function initRelicRoster(root: HTMLElement) {
             button.setAttribute('aria-pressed', String(filter.value === value));
             const total = value === 'needed' ? needed : value === 'unneeded' ? cards.length - needed : cards.length;
             const output = button.querySelector<HTMLElement>('[data-view-count]');
-            if (output) output.textContent = String(total);
+            if (output) output.textContent = `(${total})`;
         }
         form.dispatchEvent(new Event('input', { bubbles: true }));
     }
